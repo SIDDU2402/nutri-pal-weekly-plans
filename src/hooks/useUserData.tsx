@@ -48,7 +48,9 @@ export const useUserData = () => {
     }
 
     fetchUserData();
-    setupRealtimeSubscriptions();
+    const cleanup = setupRealtimeSubscriptions();
+    
+    return cleanup;
   }, [user]);
 
   const fetchUserData = async () => {
@@ -89,11 +91,13 @@ export const useUserData = () => {
   };
 
   const setupRealtimeSubscriptions = () => {
-    if (!user) return;
+    if (!user) return () => {};
+
+    console.log('Setting up realtime subscriptions for user:', user.id);
 
     // Subscribe to profile changes
     const profileChannel = supabase
-      .channel('profiles-changes')
+      .channel(`profiles-changes-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -113,7 +117,7 @@ export const useUserData = () => {
 
     // Subscribe to health data changes
     const healthChannel = supabase
-      .channel('health-data-changes')
+      .channel(`health-data-changes-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -137,7 +141,7 @@ export const useUserData = () => {
 
     // Subscribe to meal plans changes
     const mealPlansChannel = supabase
-      .channel('meal-plans-changes')
+      .channel(`meal-plans-changes-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -159,7 +163,9 @@ export const useUserData = () => {
       )
       .subscribe();
 
+    // Return cleanup function
     return () => {
+      console.log('Cleaning up realtime subscriptions');
       supabase.removeChannel(profileChannel);
       supabase.removeChannel(healthChannel);
       supabase.removeChannel(mealPlansChannel);
