@@ -1,5 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserData } from "@/hooks/useUserData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import OnboardingFlow from "@/components/OnboardingFlow";
@@ -10,8 +11,9 @@ import { Link } from "react-router-dom";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { profile, loading: profileLoading, updateProfile } = useUserData();
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
         <div className="text-center">
@@ -22,8 +24,35 @@ const Index = () => {
     );
   }
 
-  // If user is authenticated, show the dashboard
-  if (user) {
+  // If user is authenticated but hasn't completed onboarding
+  if (user && (!profile?.age || !profile?.weight || !profile?.height || !profile?.dietary_goals)) {
+    const handleOnboardingComplete = async (data: any) => {
+      try {
+        await updateProfile({
+          first_name: data.basicInfo.name,
+          age: parseInt(data.basicInfo.age),
+          gender: data.basicInfo.gender,
+          weight: parseFloat(data.basicInfo.weight),
+          height: parseFloat(data.basicInfo.height),
+          dietary_goals: data.goals.primaryGoal,
+          activity_level: data.lifestyle.activityLevel,
+          allergies: data.dietary.allergies,
+          preferred_cuisines: data.dietary.cuisines
+        });
+      } catch (error) {
+        console.error('Error updating profile:', error);
+      }
+    };
+
+    return (
+      <ProtectedRoute>
+        <OnboardingFlow onComplete={handleOnboardingComplete} />
+      </ProtectedRoute>
+    );
+  }
+
+  // If user is authenticated and has completed onboarding, show dashboard
+  if (user && profile?.age) {
     return (
       <ProtectedRoute>
         <RealTimeDashboard />

@@ -6,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/hooks/useUserData';
 import { CalendarDays, ShoppingCart, Target, TrendingUp, User, LogOut } from "lucide-react";
+import AiMealPlanGenerator from './AiMealPlanGenerator';
+import RecipeSuggestions from './RecipeSuggestions';
+import AiNutritionistChat from './AiNutritionistChat';
+import HealthDataTracker from './HealthDataTracker';
 
 const RealTimeDashboard = () => {
   const { user, signOut } = useAuth();
@@ -128,7 +132,7 @@ const RealTimeDashboard = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Profile Information */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-xl text-gray-800">Profile Information</CardTitle>
@@ -150,11 +154,11 @@ const RealTimeDashboard = () => {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Weight</p>
-                    <p className="text-lg">{profile?.weight ? `${profile.weight} kg` : 'Not set'}</p>
+                    <p className="text-lg">{profile?.weight ? `${profile.weight} lbs` : 'Not set'}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Height</p>
-                    <p className="text-lg">{profile?.height ? `${profile.height} cm` : 'Not set'}</p>
+                    <p className="text-lg">{profile?.height ? `${profile.height} inches` : 'Not set'}</p>
                   </div>
                 </div>
                 
@@ -180,30 +184,21 @@ const RealTimeDashboard = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Health Data Tracker */}
+            <HealthDataTracker />
+
+            {/* Recipe Suggestions */}
+            <RecipeSuggestions />
           </div>
 
-          {/* Quick Actions & Recent Activity */}
+          {/* AI Features Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-800">AI-Powered Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
-                  Generate AI Meal Plan
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Get Recipe Suggestions
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Update Health Data
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Chat with AI Nutritionist
-                </Button>
-              </CardContent>
-            </Card>
+            {/* AI Meal Plan Generator */}
+            <AiMealPlanGenerator />
+
+            {/* AI Nutritionist Chat */}
+            <AiNutritionistChat />
 
             {/* Recent Health Data */}
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
