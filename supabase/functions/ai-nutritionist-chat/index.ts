@@ -16,7 +16,12 @@ serve(async (req) => {
     
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
+      console.error('OpenAI API key not configured')
       throw new Error('OpenAI API key not configured')
+    }
+
+    if (!message || typeof message !== 'string') {
+      throw new Error('Message is required and must be a string')
     }
 
     const systemPrompt = `You are NutriSenseAI, a caring and knowledgeable AI nutritionist. You provide personalized nutrition advice, meal planning help, and wellness guidance.
@@ -35,7 +40,10 @@ Guidelines:
 - Consider the user's specific context and restrictions
 - Ask clarifying questions when needed
 - Always prioritize safety and recommend consulting healthcare providers for medical issues
-- Keep responses conversational but informative`
+- Keep responses conversational but informative
+- Limit responses to 150-200 words for better readability`
+
+    console.log('Processing chat message:', message.substring(0, 50) + '...')
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -44,7 +52,7 @@ Guidelines:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -60,8 +68,19 @@ Guidelines:
       }),
     })
 
+    if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText)
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
+    }
+
     const data = await response.json()
-    const aiResponse = data.choices[0].message.content
+    const aiResponse = data.choices?.[0]?.message?.content
+
+    if (!aiResponse) {
+      throw new Error('No response received from OpenAI')
+    }
+
+    console.log('AI response generated successfully')
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
@@ -75,7 +94,7 @@ Guidelines:
   } catch (error) {
     console.error('Error in AI chat:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Failed to process chat message' }),
       { 
         status: 500,
         headers: { 

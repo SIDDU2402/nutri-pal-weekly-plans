@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -40,18 +40,28 @@ export const useUserData = () => {
   const [healthData, setHealthData] = useState<HealthData[]>([]);
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const subscriptionsRef = useRef<any[]>([]);
 
   useEffect(() => {
     if (!user) {
+      setProfile(null);
+      setHealthData([]);
+      setMealPlans([]);
       setLoading(false);
       return;
     }
 
     fetchUserData();
-    const cleanup = setupRealtimeSubscriptions();
+    setupRealtimeSubscriptions();
     
-    return cleanup;
-  }, [user]);
+    return () => {
+      console.log('Cleaning up realtime subscriptions');
+      subscriptionsRef.current.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
+      subscriptionsRef.current = [];
+    };
+  }, [user?.id]); // Only depend on user ID to prevent unnecessary re-runs
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -91,13 +101,13 @@ export const useUserData = () => {
   };
 
   const setupRealtimeSubscriptions = () => {
-    if (!user) return () => {};
+    if (!user || subscriptionsRef.current.length > 0) return;
 
     console.log('Setting up realtime subscriptions for user:', user.id);
 
     // Subscribe to profile changes
     const profileChannel = supabase
-      .channel(`profiles-changes-${user.id}`)
+      .channel(`profiles-${user.id}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -117,7 +127,7 @@ export const useUserData = () => {
 
     // Subscribe to health data changes
     const healthChannel = supabase
-      .channel(`health-data-changes-${user.id}`)
+      .channel(`health-data-${user.id}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -141,7 +151,7 @@ export const useUserData = () => {
 
     // Subscribe to meal plans changes
     const mealPlansChannel = supabase
-      .channel(`meal-plans-changes-${user.id}`)
+      .channel(`meal-plans-${user.id}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -163,13 +173,7 @@ export const useUserData = () => {
       )
       .subscribe();
 
-    // Return cleanup function
-    return () => {
-      console.log('Cleaning up realtime subscriptions');
-      supabase.removeChannel(profileChannel);
-      supabase.removeChannel(healthChannel);
-      supabase.removeChannel(mealPlansChannel);
-    };
+    subscriptionsRef.current = [profileChannel, healthChannel, mealPlansChannel];
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {

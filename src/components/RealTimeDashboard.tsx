@@ -30,8 +30,8 @@ const RealTimeDashboard = () => {
     );
   }
 
-  const todayHealthData = healthData[0];
-  const currentMealPlan = mealPlans[0];
+  const todayHealthData = healthData?.[0];
+  const currentMealPlan = mealPlans?.[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
@@ -40,7 +40,7 @@ const RealTimeDashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Welcome back, {profile?.first_name || user?.email}! 🌱
+              Welcome back, {profile?.first_name || 'there'}! 🌱
             </h1>
             <p className="text-gray-600">
               Here's your personalized wellness dashboard with real-time updates.
@@ -120,7 +120,7 @@ const RealTimeDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-700">
-                {mealPlans.length}
+                {mealPlans?.length || 0}
               </div>
               <p className="text-xs text-gray-500">
                 Generated plans
@@ -145,7 +145,9 @@ const RealTimeDashboard = () => {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Name</p>
                     <p className="text-lg">
-                      {profile?.first_name} {profile?.last_name}
+                      {profile?.first_name && profile?.last_name 
+                        ? `${profile.first_name} ${profile.last_name}` 
+                        : 'Not set'}
                     </p>
                   </div>
                   <div>
@@ -182,6 +184,17 @@ const RealTimeDashboard = () => {
                     </div>
                   </div>
                 )}
+
+                {profile?.preferred_cuisines && profile.preferred_cuisines.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-2">Preferred Cuisines</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.preferred_cuisines.map((cuisine, index) => (
+                        <Badge key={index} variant="outline">{cuisine}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -207,16 +220,17 @@ const RealTimeDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {healthData.slice(0, 5).map((data) => (
-                    <div key={data.id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">{data.date}</span>
-                      <div className="text-right">
-                        <div>Steps: {data.steps || 0}</div>
-                        <div>Sleep: {data.sleep_hours || 0}h</div>
+                  {healthData && healthData.length > 0 ? (
+                    healthData.slice(0, 5).map((data) => (
+                      <div key={data.id} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{data.date}</span>
+                        <div className="text-right">
+                          <div>Steps: {data.steps || 0}</div>
+                          <div>Sleep: {data.sleep_hours || 0}h</div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {healthData.length === 0 && (
+                    ))
+                  ) : (
                     <p className="text-xs text-gray-500 text-center">
                       No health data recorded yet
                     </p>

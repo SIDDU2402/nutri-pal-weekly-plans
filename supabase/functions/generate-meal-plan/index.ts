@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,14 +16,15 @@ serve(async (req) => {
     
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
+      console.error('OpenAI API key not configured')
       throw new Error('OpenAI API key not configured')
     }
 
     const prompt = `Create a personalized weekly meal plan for someone with these preferences:
-    - Dietary goals: ${dietary_goals}
+    - Dietary goals: ${dietary_goals || 'General health'}
     - Allergies: ${allergies?.join(', ') || 'None'}
     - Preferred cuisines: ${preferred_cuisines?.join(', ') || 'Any'}
-    - Activity level: ${activity_level}
+    - Activity level: ${activity_level || 'Moderate'}
     
     Please provide:
     1. 7 days of meals (breakfast, lunch, dinner, 2 snacks)
@@ -36,18 +36,25 @@ serve(async (req) => {
     {
       "explanation": "Brief explanation",
       "meals": {
-        "monday": {"breakfast": {...}, "lunch": {...}, "dinner": {...}, "snacks": [...]},
-        // ... for all 7 days
+        "monday": {"breakfast": {"name": "...", "calories": 300, "protein": "15g"}, "lunch": {...}, "dinner": {...}, "snacks": [...]},
+        "tuesday": {...},
+        "wednesday": {...},
+        "thursday": {...},
+        "friday": {...},
+        "saturday": {...},
+        "sunday": {...}
       },
       "grocery_list": {
-        "proteins": [...],
-        "vegetables": [...],
-        "fruits": [...],
-        "grains": [...],
-        "dairy": [...],
-        "pantry": [...]
+        "proteins": ["chicken breast", "salmon"],
+        "vegetables": ["broccoli", "spinach"],
+        "fruits": ["bananas", "apples"],
+        "grains": ["brown rice", "quinoa"],
+        "dairy": ["Greek yogurt", "milk"],
+        "pantry": ["olive oil", "spices"]
       }
     }`
+
+    console.log('Making request to OpenAI with prompt:', prompt.substring(0, 100) + '...')
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -56,11 +63,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: 'You are a professional nutritionist and meal planning expert. Create detailed, healthy, and practical meal plans.'
+            content: 'You are a professional nutritionist and meal planning expert. Create detailed, healthy, and practical meal plans. Always respond with valid JSON only.'
           },
           {
             role: 'user',
@@ -72,8 +79,21 @@ serve(async (req) => {
       }),
     })
 
+    if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText)
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
+    }
+
     const data = await response.json()
-    const mealPlan = JSON.parse(data.choices[0].message.content)
+    console.log('OpenAI response received:', data.choices?.[0]?.message?.content?.substring(0, 100))
+
+    let mealPlan
+    try {
+      mealPlan = JSON.parse(data.choices[0].message.content)
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response as JSON:', parseError)
+      throw new Error('Failed to parse meal plan response')
+    }
 
     return new Response(
       JSON.stringify({ mealPlan }),
@@ -87,7 +107,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error generating meal plan:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Failed to generate meal plan' }),
       { 
         status: 500,
         headers: { 
