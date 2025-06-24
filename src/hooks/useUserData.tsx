@@ -40,7 +40,8 @@ export const useUserData = () => {
   const [healthData, setHealthData] = useState<HealthData[]>([]);
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const subscriptionsRef = useRef<any[]>([]);
+  const channelsRef = useRef<any[]>([]);
+  const isSubscribedRef = useRef(false);
 
   useEffect(() => {
     if (!user) {
@@ -48,20 +49,38 @@ export const useUserData = () => {
       setHealthData([]);
       setMealPlans([]);
       setLoading(false);
+      
+      // Clean up any existing subscriptions
+      if (channelsRef.current.length > 0) {
+        console.log('Cleaning up realtime subscriptions - no user');
+        channelsRef.current.forEach(channel => {
+          supabase.removeChannel(channel);
+        });
+        channelsRef.current = [];
+        isSubscribedRef.current = false;
+      }
       return;
     }
 
     fetchUserData();
-    setupRealtimeSubscriptions();
+    
+    // Only set up subscriptions if not already subscribed
+    if (!isSubscribedRef.current) {
+      setupRealtimeSubscriptions();
+    }
     
     return () => {
-      console.log('Cleaning up realtime subscriptions');
-      subscriptionsRef.current.forEach(channel => {
-        supabase.removeChannel(channel);
-      });
-      subscriptionsRef.current = [];
+      // Clean up subscriptions when component unmounts or user changes
+      if (channelsRef.current.length > 0) {
+        console.log('Cleaning up realtime subscriptions');
+        channelsRef.current.forEach(channel => {
+          supabase.removeChannel(channel);
+        });
+        channelsRef.current = [];
+        isSubscribedRef.current = false;
+      }
     };
-  }, [user?.id]); // Only depend on user ID to prevent unnecessary re-runs
+  }, [user?.id]);
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -101,13 +120,20 @@ export const useUserData = () => {
   };
 
   const setupRealtimeSubscriptions = () => {
-    if (!user || subscriptionsRef.current.length > 0) return;
+    if (!user || isSubscribedRef.current) {
+      console.log('Skipping subscription setup - already subscribed or no user');
+      return;
+    }
 
     console.log('Setting up realtime subscriptions for user:', user.id);
+    
+    // Create unique channel names using timestamp and random number
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(7);
 
     // Subscribe to profile changes
     const profileChannel = supabase
-      .channel(`profiles-${user.id}-${Date.now()}`)
+      .channel(`profiles-${user.id}-${timestamp}-${random}-profile`)
       .on(
         'postgres_changes',
         {
@@ -127,7 +153,7 @@ export const useUserData = () => {
 
     // Subscribe to health data changes
     const healthChannel = supabase
-      .channel(`health-data-${user.id}-${Date.now()}`)
+      .channel(`health-data-${user.id}-${timestamp}-${random}-health`)
       .on(
         'postgres_changes',
         {
@@ -151,7 +177,7 @@ export const useUserData = () => {
 
     // Subscribe to meal plans changes
     const mealPlansChannel = supabase
-      .channel(`meal-plans-${user.id}-${Date.now()}`)
+      .channel(`meal-plans-${user.id}-${timestamp}-${random}-meals`)
       .on(
         'postgres_changes',
         {
@@ -173,7 +199,8 @@ export const useUserData = () => {
       )
       .subscribe();
 
-    subscriptionsRef.current = [profileChannel, healthChannel, mealPlansChannel];
+    channelsRef.current = [profileChannel, healthChannel, mealPlansChannel];
+    isSubscribedRef.current = true;
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
