@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+# Nutri Pal Weekly Plans
 
-## Project info
+Personalized Weekly Nutrition Planner
 
-**URL**: https://lovable.dev/projects/cbd314fc-06cd-4c54-bdbb-2f1128860153
+---
 
-## How can I edit this code?
+**Nutri Pal Weekly Plans** is an open-source application designed to help users efficiently plan and manage balanced weekly meal schedules. Built from scratch with a modern stack and an intuitive UI, it empowers anyone to track meals, optimize nutrition, and maintain healthy eating habits with ease.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🌟 Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cbd314fc-06cd-4c54-bdbb-2f1128860153) and start prompting.
+- **Custom Weekly Meal Plans:** Generate and track tailored meal schedules.
+- **Nutritional Guidance:** Integrated with real-time nutrition information.
+- **Responsive UI:** Intuitive interface using shadcn-ui and Tailwind CSS.
+- **Editable Plans:** Update, reorder, or remove meals as needed.
+- **Modern Tooling:** Fast development workflow with Vite and TypeScript.
+- **Easy Deployment:** Easily deploy to your preferred hosting platform.
+- **Custom Domain Support:** Connect your own domain for a personalized experience.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🛠️ Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+| Layer      | Technology                |
+|------------|--------------------------|
+| Frontend   | React, TypeScript        |
+| UI         | shadcn-ui, Tailwind CSS  |
+| Tooling    | Vite                     |
+| Hosting    | Any platform of choice   |
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🚀 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- [Node.js](https://nodejs.org/)
+- [npm](https://www.npmjs.com/) (comes with Node.js)
+- [Git](https://git-scm.com/)
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Local Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Clone the repository
+```bash
+git clone https://github.com/SIDDU2402/nutri-pal-weekly-plans.git
+```
+### Navigate to the project directory
+```
+cd nutri-pal-weekly-plans
+```
+### Install dependencies
+```
+npm install
+
+Start the development server
 npm run dev
 ```
+## 🤝 Contributing
 
-**Edit a file directly in GitHub**
+Contributions are welcome! Fork the repo and submit a pull request, or open an issue to discuss your ideas.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
+## 👤 Maintainer
 
-**Use GitHub Codespaces**
+- [SIDDU2402 (BEZAWADA SIDDI NIKHILESH)](https://github.com/SIDDU2402)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🙏 Acknowledgments
 
-This project is built with:
+- [shadcn-ui](https://ui.shadcn.com/) for the component library
+- [Tailwind CSS](https://tailwindcss.com/) for rapid styling
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 📬 Contact
 
-Simply open [Lovable](https://lovable.dev/projects/cbd314fc-06cd-4c54-bdbb-2f1128860153) and click on Share -> Publish.
+Open an issue for support or feature requests, or use GitHub Discussions.
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
